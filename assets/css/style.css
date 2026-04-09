@@ -662,13 +662,14 @@ a:focus-visible {
   min-height: 300px;             /* ← pavimento minimo di sicurezza */
 }
 
-/* The iframe itself */
+/* The iframe itself — absolute so riempie sempre il frame parent */
 .pdf-embed {
-  display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   border: none;
-  background: #ffffff;       /* PDFs have white backgrounds */
+  background: #ffffff;
 }
 
 /* ——— Loading state ——— */
