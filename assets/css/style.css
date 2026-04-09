@@ -1,0 +1,1019 @@
+/* ============================================================
+   ACADEMIC PORTFOLIO — style.css
+   Shared styles for index.html (Thesis) and cv.html (CV)
+   ============================================================
+
+   Table of Contents:
+   01. CSS Custom Properties (Design Tokens)
+   02. Reset & Base
+   03. Typography
+   04. Navigation
+   05. Document Header
+   06. Abstract Section
+   07. PDF Viewer Section
+   08. Footer
+   09. CV-specific Overrides
+   10. Fullscreen State
+   11. Responsive — Tablet (< 1024px)
+   12. Responsive — Mobile (< 768px)
+   13. Responsive — Small Mobile (< 480px)
+
+   ============================================================ */
+
+
+/* ============================================================
+   01. CSS CUSTOM PROPERTIES (Design Tokens)
+   ============================================================ */
+
+:root {
+
+  /* — Color: Backgrounds — */
+  --bg-base:       #07090f;    /* Page background — deep near-black navy */
+  --bg-surface:    #0b0e18;    /* Slightly lighter surface */
+  --bg-elevated:   #0f1320;    /* Elevated surfaces (cards, frames) */
+  --bg-chrome:     #131826;    /* Viewer chrome bar */
+  --bg-nav:        rgba(7, 9, 15, 0.78);  /* Nav glass background */
+
+  /* — Color: Borders — */
+  --border-faint:  rgba(255, 255, 255, 0.05);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.13);
+  --border-gold:   rgba(201, 169, 110, 0.22);
+
+  /* — Color: Gold Accent — */
+  --gold:          #c9a96e;
+  --gold-bright:   #d9bc8a;
+  --gold-dim:      rgba(201, 169, 110, 0.60);
+  --gold-glow:     rgba(201, 169, 110, 0.055);
+  --gold-surface:  rgba(201, 169, 110, 0.04);
+
+  /* — Color: Text — */
+  --text-bright:   #ede9e3;    /* Headings, high-emphasis */
+  --text-primary:  #c8c2b8;    /* Body text */
+  --text-secondary:#7d776e;    /* Subdued labels */
+  --text-muted:    #413e38;    /* Decorative / very low contrast */
+
+  /* — Typography — */
+  --font-serif:  'Cormorant Garamond', 'Georgia', 'Times New Roman', serif;
+  --font-sans:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+
+  /* — Layout — */
+  --nav-h:     64px;
+  --max-w:     1380px;
+  --r-sm:      6px;
+  --r-md:      10px;
+  --r-lg:      14px;
+
+  /* — Shadows — */
+  --shadow-viewer:
+    0 0 0 1px var(--border-subtle),
+    0 2px 6px  rgba(0, 0, 0, 0.35),
+    0 10px 28px rgba(0, 0, 0, 0.50),
+    0 30px 60px rgba(0, 0, 0, 0.40),
+    0 0  100px var(--gold-glow);
+
+  /* — Transitions — */
+  --ease:       0.18s ease;
+  --ease-slow:  0.36s ease;
+  --ease-spring:0.42s cubic-bezier(0.4, 0, 0.2, 1);
+
+}
+
+
+/* ============================================================
+   02. RESET & BASE
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.65;
+  height: 100%;                  /* ← ancora al 100% di html */
+  display: flex;                 /* ← colonna verticale */
+  flex-direction: column;        /*    navbar / header / viewer / footer */
+  overflow: hidden;              /* ← niente scroll sulla pagina, scroll dentro l'iframe */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Subtle multi-point radial gradient for depth — looks better than flat black */
+  background-image:
+    radial-gradient(ellipse 130% 55% at  5% 30%, rgba(14, 26, 58, 0.42) 0%, transparent 65%),
+    radial-gradient(ellipse  80% 45% at 95% 10%, rgba(34, 16, 54, 0.28) 0%, transparent 55%),
+    radial-gradient(ellipse  70% 70% at 50% 100%,rgba( 8, 14, 32, 0.32) 0%, transparent 70%);
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font-family: var(--font-sans);
+}
+
+
+/* ============================================================
+   03. TYPOGRAPHY
+   ============================================================ */
+
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  color: var(--text-bright);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: color var(--ease);
+}
+
+a:hover {
+  color: var(--gold-bright);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--gold-dim);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+
+/* ============================================================
+   04. NAVIGATION
+   ============================================================ */
+
+.navbar {
+  position: fixed;
+  inset: 0 0 auto 0;      /* top:0, left:0, right:0 */
+  z-index: 900;
+  height: var(--nav-h);
+
+  background: var(--bg-nav);
+  backdrop-filter: blur(32px) saturate(150%);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
+  border-bottom: 1px solid var(--border-faint);
+
+  transition:
+    background  var(--ease-slow),
+    border-color var(--ease-slow);
+}
+
+/* Elevated state when user scrolls */
+.navbar.scrolled {
+  background: rgba(7, 9, 15, 0.95);
+  border-bottom-color: var(--border-subtle);
+}
+
+.nav-container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+/* ——— Logo ——— */
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.nav-logo-mark {
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.nav-logo-text {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  letter-spacing: 0.025em;
+  transition: color var(--ease);
+}
+
+.nav-logo:hover .nav-logo-text {
+  color: var(--text-primary);
+}
+
+/* Thin vertical separator between mark and text */
+.nav-logo::before {
+  content: none; /* not used */
+}
+
+/* ——— Links ——— */
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--r-sm);
+  transition: color var(--ease), background var(--ease);
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  color: var(--text-bright);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.nav-link.active {
+  color: var(--gold);
+  background: var(--gold-surface);
+}
+
+/* ——— Mobile hamburger toggle ——— */
+
+.nav-toggle {
+  display: none;          /* shown only on mobile via media query */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 36px;
+  padding: 6px 8px;
+  background: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: border-color var(--ease);
+}
+
+.nav-toggle:hover {
+  border-color: var(--border-medium);
+}
+
+.toggle-bar {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: var(--text-secondary);
+  border-radius: 2px;
+  transform-origin: center;
+  transition: transform var(--ease), opacity var(--ease);
+}
+
+/* Animated to X when open */
+.nav-toggle.is-open .toggle-bar:nth-child(1) {
+  transform: translateY(6.5px) rotate(45deg);
+}
+.nav-toggle.is-open .toggle-bar:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.nav-toggle.is-open .toggle-bar:nth-child(3) {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+
+
+/* ============================================================
+   05. DOCUMENT HEADER
+   ============================================================ */
+
+.doc-header {
+  flex-shrink: 0;                /* ← non si comprime per far spazio al viewer */
+  padding-top: calc(var(--nav-h) + 1.25rem);
+  padding-bottom: 1rem;
+  padding-inline: 2rem;
+  border-bottom: 1px solid var(--border-faint);
+
+  /* Very subtle directional gradient from top */
+  background: linear-gradient(
+    180deg,
+    rgba(14, 24, 52, 0.16) 0%,
+    transparent 100%
+  );
+}
+
+.doc-header-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+/* — Type badge (pill) — */
+
+.doc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  border: 1px solid var(--border-gold);
+  padding: 0.3rem 0.8rem 0.3rem 0.6rem;
+  border-radius: 100px;
+  margin-bottom: 0.75rem;
+  background: var(--gold-surface);
+}
+
+/* Pulsing dot inside badge */
+.badge-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 7px var(--gold);
+  flex-shrink: 0;
+}
+
+/* — Title — */
+
+.doc-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.65rem, 3.4vw, 2.75rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text-bright);
+  letter-spacing: -0.015em;
+  max-width: 900px;
+}
+
+.doc-subtitle {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: clamp(0.95rem, 1.6vw, 1.2rem);
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+/* Name variant used on CV page */
+.doc-title--name {
+  font-size: clamp(1.8rem, 3.6vw, 3rem);
+  letter-spacing: -0.02em;
+}
+
+/* CV tagline */
+.cv-tagline {
+  font-size: 0.875rem;
+  font-weight: 300;
+  color: var(--text-secondary);
+  margin-top: 0.6rem;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+}
+
+/* — Meta row (Author · Institution · Year) — */
+
+.doc-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0;
+  margin-top: 0.75rem;
+}
+
+.meta-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.meta-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.meta-value {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.meta-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--ease);
+}
+
+.meta-link:hover {
+  color: var(--gold-dim);
+}
+
+/* Thin vertical separator between meta groups */
+.meta-sep {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background: var(--border-medium);
+  margin: 0 1.25rem;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+
+/* ============================================================
+   06. ABSTRACT SECTION
+   ============================================================ */
+
+.abstract-bar {
+  flex-shrink: 0;                /* ← non si comprime */
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.abstract-bar-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* — Trigger button — */
+
+.abstract-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.8rem 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color var(--ease);
+  text-align: left;
+  gap: 1rem;
+}
+
+.abstract-trigger:hover,
+.abstract-trigger.is-open {
+  color: var(--text-secondary);
+}
+
+.trigger-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Decorative horizontal rule before label text */
+.trigger-label::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+.trigger-chevron {
+  transition: transform var(--ease-spring);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.abstract-trigger.is-open .trigger-chevron {
+  transform: rotate(180deg);
+  opacity: 0.9;
+}
+
+/* — Collapsible panel — */
+/* Uses CSS grid trick for smooth height animation without JS */
+
+.abstract-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--ease-spring);
+}
+
+.abstract-panel.is-open {
+  grid-template-rows: 1fr;
+}
+
+.abstract-panel-inner {
+  overflow: hidden;
+}
+
+.abstract-panel-inner p {
+  padding: 0.25rem 0 1.5rem;
+  font-size: 0.875rem;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.95;
+  color: var(--text-secondary);
+  max-width: 800px;
+}
+
+
+/* ============================================================
+   07. PDF VIEWER SECTION
+   ============================================================ */
+
+.viewer-section {
+  flex: 1;                       /* ← OCCUPA TUTTO LO SPAZIO RIMASTO */
+  min-height: 0;                 /* ← obbligatorio per il flex-fill in Firefox */
+  padding: 0.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.viewer-section--compact {
+  padding-top: 0.75rem;
+}
+
+/* ——— The outer container ——— */
+
+.viewer-container {
+  flex: 1;                       /* ← occupa tutto lo spazio del viewer-section */
+  min-height: 0;                 /* ← obbligatorio */
+  max-width: var(--max-w);
+  margin: 0 auto;
+  width: 100%;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-viewer);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ——— Chrome bar (macOS-style decorative header) ——— */
+
+.viewer-chrome {
+  position: relative;        /* needed for absolutely-centred label */
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  height: 44px;
+  background: var(--bg-chrome);
+  border-bottom: 1px solid var(--border-faint);
+}
+
+/* Traffic-light dots */
+.chrome-controls {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  z-index: 1;
+}
+
+.chrome-dot {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.dot-red    { background: rgba(255, 95,  87, 0.45); }
+.dot-yellow { background: rgba(255, 189, 46, 0.45); }
+.dot-green  { background: rgba( 40, 200, 64, 0.45); }
+
+/* Centred filename label */
+.chrome-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Right-side action buttons */
+.chrome-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  z-index: 1;
+}
+
+.chrome-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color var(--ease), border-color var(--ease), background var(--ease);
+}
+
+.chrome-action-btn:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ——— The actual PDF frame ——— */
+
+.viewer-frame {
+  position: relative;
+  background: var(--bg-elevated);
+  flex: 1;                       /* ← si espande a riempire il container */
+  min-height: 300px;             /* ← pavimento minimo di sicurezza */
+}
+
+/* The iframe itself */
+.pdf-embed {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;       /* PDFs have white backgrounds */
+}
+
+/* ——— Loading state ——— */
+/* A dark overlay while the PDF is being fetched */
+
+.viewer-frame.is-loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bg-elevated);
+  z-index: 10;
+  transition: opacity 0.6s ease 0.3s;
+}
+
+.viewer-frame.is-loading::after {
+  content: 'Loading document\2026';  /* … */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 11;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-sans);
+}
+
+/* ——— Fallback content ——— */
+/* Shown if browser can't render inline PDF */
+
+.embed-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+  gap: 1.25rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.fallback-icon {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.fallback-open-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  color: var(--gold-dim);
+  border: 1px solid var(--border-gold);
+  padding: 0.55rem 1.3rem;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+  background: var(--gold-surface);
+  transition: background var(--ease), color var(--ease), border-color var(--ease);
+}
+
+.fallback-open-link:hover {
+  background: rgba(201, 169, 110, 0.09);
+  color: var(--gold);
+  border-color: rgba(201, 169, 110, 0.38);
+}
+
+
+/* ============================================================
+   08. FOOTER
+   ============================================================ */
+
+.site-footer {
+  flex-shrink: 0;                /* ← rimane fisso in basso */
+  padding: 0 2rem;
+  height: 52px;
+  border-top: 1px solid var(--border-faint);
+  display: flex;
+  align-items: center;
+}
+
+.footer-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.footer-copy {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+/* Very discreet download link — not prominent, just available */
+.footer-dl-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.6875rem;
+  text-decoration: none;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  transition: color var(--ease), border-color var(--ease), background var(--ease);
+}
+
+.footer-dl-link:hover {
+  color: var(--gold-dim);
+  border-color: var(--border-gold);
+  background: var(--gold-surface);
+}
+
+
+/* ============================================================
+   09. CV PAGE — SPECIFIC OVERRIDES
+   ============================================================ */
+
+/* The CV header is slightly more compact — less top-heavy */
+.doc-header--cv {
+  padding-top: calc(var(--nav-h) + 1rem);
+}
+
+
+/* ============================================================
+   10. FULLSCREEN STATE
+   ============================================================ */
+
+/* When the viewer container enters fullscreen */
+:fullscreen .viewer-container,
+:-webkit-full-screen .viewer-container {
+  border-radius: 0;
+  box-shadow: none;
+  max-width: none;
+}
+
+:fullscreen .viewer-chrome,
+:-webkit-full-screen .viewer-chrome {
+  border-radius: 0;
+}
+
+:fullscreen .viewer-frame,
+:-webkit-full-screen .viewer-frame {
+  height: calc(100vh - 44px) !important;  /* 44px = chrome height */
+  min-height: 0;
+}
+
+:fullscreen .pdf-embed,
+:-webkit-full-screen .pdf-embed {
+  height: 100%;
+}
+
+
+/* ============================================================
+   11. RESPONSIVE — TABLET LANDSCAPE (< 1024px)
+   ============================================================ */
+
+@media (max-width: 1023px) {
+
+  .doc-header {
+    padding-top: calc(var(--nav-h) + 2.25rem);
+  }
+
+  .doc-title {
+    max-width: 100%;
+  }
+
+}
+
+
+/* ============================================================
+   12. RESPONSIVE — TABLET PORTRAIT & MOBILE (< 768px)
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+  :root {
+    --nav-h: 56px;
+  }
+
+  /* Su mobile: torna al layout scrollabile normale */
+  html, body {
+    height: auto;
+    overflow: auto;
+  }
+
+  .viewer-section {
+    flex: none;
+    min-height: 0;
+  }
+
+  .viewer-container {
+    flex: none;
+    min-height: 0;
+  }
+
+  .viewer-frame {
+    height: 70vh;          /* altezza fissa su mobile */
+    min-height: 400px;
+    flex: none;
+  }
+
+  /* ——— Mobile navigation ——— */
+
+  .nav-toggle {
+    display: flex;   /* visible on mobile */
+  }
+
+  .nav-links {
+    /* Slide down from nav on mobile */
+    position: fixed;
+    top: var(--nav-h);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem 1rem;
+    background: rgba(7, 9, 15, 0.97);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border-subtle);
+    z-index: 800;
+
+    /* Hidden by default */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity var(--ease-slow), transform var(--ease-slow);
+  }
+
+  .nav-links.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .nav-link {
+    padding: 0.7rem 1rem;
+    border-radius: var(--r-sm);
+  }
+
+  /* ——— Document header ——— */
+
+  .doc-header {
+    padding-top: calc(var(--nav-h) + 1.5rem);
+    padding-bottom: 1.5rem;
+    padding-inline: 1.25rem;
+  }
+
+  .doc-header--cv {
+    padding-top: calc(var(--nav-h) + 1.25rem);
+  }
+
+  /* Stack meta groups vertically on mobile */
+  .meta-sep {
+    display: none;
+  }
+
+  .doc-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
+  /* ——— Abstract ——— */
+
+  .abstract-bar-inner {
+    padding-inline: 1.25rem;
+  }
+
+  /* ——— Viewer ——— */
+
+  .viewer-section {
+    padding: 1rem 1.25rem;
+  }
+
+  .viewer-container {
+    border-radius: var(--r-md);
+  }
+
+  .chrome-label {
+    font-size: 0.6875rem;
+  }
+
+  /* ——— Footer ——— */
+
+  .site-footer {
+    padding-inline: 1.25rem;
+  }
+
+}
+
+
+/* ============================================================
+   13. RESPONSIVE — SMALL MOBILE (< 480px)
+   ============================================================ */
+
+@media (max-width: 479px) {
+
+  /* Hide text label on logo; show initials only */
+  .nav-logo-text {
+    display: none;
+  }
+
+  /* Tighter title size */
+  .doc-title {
+    font-size: 1.55rem;
+  }
+
+  .doc-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .doc-title--name {
+    font-size: 1.8rem;
+  }
+
+  .doc-badge {
+    font-size: 0.625rem;
+  }
+
+  /* Hide centred label in chrome on very small screens */
+  .chrome-label {
+    display: none;
+  }
+
+  /* Tighter viewer padding */
+  .viewer-section {
+    padding: 0.75rem 1rem;
+  }
+
+  /* Compact footer */
+  .footer-copy {
+    font-size: 0.6875rem;
+  }
+
+}
